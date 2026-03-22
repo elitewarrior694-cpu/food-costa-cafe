@@ -39,6 +39,7 @@ import {
   LayoutDashboard,
   Lock,
   LogOut,
+  Menu,
   Plus,
   ShieldCheck,
   Star,
@@ -46,6 +47,7 @@ import {
   User,
   Users,
   UtensilsCrossed,
+  X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
@@ -81,6 +83,7 @@ export default function AdminPage({ navigate }: AdminPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminTab>("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Data
   const [menuItems, setMenuItems] = useState(sampleMenuItems);
@@ -389,12 +392,54 @@ export default function AdminPage({ navigate }: AdminPageProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="min-h-screen flex"
+      className="min-h-screen flex relative"
       data-ocid="admin.panel"
     >
+      {/* Mobile backdrop overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+          onKeyDown={(e) => e.key === "Escape" && setSidebarOpen(false)}
+          role="button"
+          tabIndex={-1}
+          aria-label="Close sidebar"
+        />
+      )}
+
+      {/* Mobile header bar */}
+      <div
+        className="fixed top-0 left-0 right-0 z-30 h-14 flex items-center px-4 md:hidden"
+        style={{
+          background: "oklch(0.10 0.018 48)",
+          borderBottom: "1px solid oklch(0.72 0.12 78 / 30%)",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setSidebarOpen((v) => !v)}
+          className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors hover:bg-[oklch(0.18_0.022_50)]"
+          style={{ color: "oklch(0.72 0.12 78)" }}
+          data-ocid="admin.sidebar.toggle"
+        >
+          {sidebarOpen ? (
+            <X className="w-5 h-5" />
+          ) : (
+            <Menu className="w-5 h-5" />
+          )}
+        </button>
+        <span
+          className="flex-1 text-center font-poppins font-bold text-sm"
+          style={{ color: "oklch(0.72 0.12 78)" }}
+        >
+          Food Costa Admin
+        </span>
+        <div className="w-9" />
+      </div>
+
       {/* Sidebar */}
       <aside
-        className="w-64 shrink-0 min-h-screen flex flex-col relative"
+        className={`fixed inset-y-0 left-0 z-50 w-64 min-h-screen flex flex-col shrink-0 transition-transform duration-300 md:relative md:inset-auto md:z-auto md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
           background: "oklch(0.10 0.018 48)",
           borderRight: "1px solid oklch(0.72 0.12 78 / 15%)",
@@ -479,7 +524,10 @@ export default function AdminPage({ navigate }: AdminPageProps) {
               data-ocid={`admin.${item.tab}.tab`}
               type="button"
               key={item.tab}
-              onClick={() => setActiveTab(item.tab)}
+              onClick={() => {
+                setActiveTab(item.tab);
+                setSidebarOpen(false);
+              }}
               className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 activeTab === item.tab ? "" : "hover:bg-[oklch(0.18_0.022_50)]"
               }`}
@@ -532,7 +580,7 @@ export default function AdminPage({ navigate }: AdminPageProps) {
 
       {/* Main content */}
       <main
-        className="flex-1 overflow-auto p-8"
+        className="flex-1 overflow-auto p-8 pt-[calc(3.5rem+2rem)] md:pt-8"
         style={{ background: "oklch(0.12 0.018 48)" }}
       >
         <AnimatePresence mode="wait">
